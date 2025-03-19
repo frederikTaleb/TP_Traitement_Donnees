@@ -36,18 +36,22 @@ age_gender_stats.columns.values[0] = "cnt_age_declare"
 
 # Répartition des auteurs par région géographique
 nb_pays_notNull = profiles['country'].notnull().sum() # 2146
-population_pays = profiles.groupby('country')['country'].agg(['count'])
+population_pays = profiles.groupby('country')['country'].agg(['count']).sort_values('count', ascending=False)
+population_pays2 = population_pays[:5].copy() 
+population_pays_autres = pd.DataFrame(index=['others'], data = {'count' : [population_pays['count'][5:].sum()]})
+population_pays2 = pd.concat([population_pays2, population_pays_autres])
 # gros biais en faveur de CAN et US par rapport aux autres pays env 60% de l'échantillon
-population_pays_chart = profiles['country'].value_counts()
+population_pays_chart = population_pays2['count']
 plt.figure(figsize=(12,12))
-plt.pie(population_pays_chart, labels = population_pays_chart.index, autopct='%1.1f%%', startangle=140)
-plt.title('Répartition des auteurs par région géographique')
+plt.pie(population_pays_chart, labels = population_pays_chart.index, autopct='%1.1f%%', startangle=140, textprops={'fontsize': 18})
+plt.title('Répartition des auteurs par région géographique', fontsize=32)
 plt.show()
 
 
 # Population ayant déclaré leurs valeurs mbti ET ocean, seulement 377
 #pop_mbti_ocean garde le score mbti et le genre pcq je voulais voir s'il pouvait y avoir un lien, pas encore fait
 pop_mbti_ocean = profiles[['gender','mbti', 'introverted','intuitive','thinking','perceiving', 'agreeableness', 'openness','conscientiousness','extraversion','neuroticism']].dropna(subset=['mbti', 'introverted','intuitive','thinking','perceiving', 'agreeableness', 'openness','conscientiousness','extraversion','neuroticism'])
+pop_mbti_ocean = pop_mbti_ocean[(pop_mbti_ocean['agreeableness'] != -1.0)]
 mbti_ocean_seul = pop_mbti_ocean[['introverted','intuitive','thinking','perceiving', 'agreeableness', 'openness','conscientiousness','extraversion','neuroticism']]
 corr_mbti_ocean = mbti_ocean_seul.corr()
 #Pour avoir le heatmap
@@ -66,7 +70,7 @@ pop_ocean_clean.drop(columns=['gender']).mean()
 #Distribution des scores ocean pour chaque type de personnalite mbti
 # Je pense qu'on peut tirer une info intéressante pour valider une prédiction
 # Serait-il valide de créer un échantillon aléatoire à partir de ces données pour entraîner le modèle de prédiction?
-pop_mbti_ocean_melt = pop_mbti_ocean.melt(id_vars=['mbti'], value_vars=['openness','agreeableness','conscientiousness','extraversion','neuroticism'], var_name='OCEAN', value_name='Score')
+pop_mbti_ocean_melt = pop_mbti_ocean.melt(id_vars=['mbti']=='entp', value_vars=['openness','agreeableness','conscientiousness','extraversion','neuroticism'], var_name='OCEAN', value_name='Score')
 plt.figure(figsize=(48,12))
 sns.boxplot(x='mbti', y='Score', hue='OCEAN', data=pop_mbti_ocean_melt)
 plt.title('Dist des scores ocean pour chaque type de personnalite mbti')

@@ -14,7 +14,7 @@ def remove_whitespace(text):
 def remove_html(text):
     return BeautifulSoup(text, features='html.parser').get_text()
 
-def remove_urls(text):
+def remove_urls_old(text):
     pattern = re.compile(r'https?://\S+|www\.\S+')
     return pattern.sub(r'', text)
 

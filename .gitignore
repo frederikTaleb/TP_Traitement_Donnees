@@ -1,5 +1,8 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 datasets/
+results_introverted/
+logs_introverted/
+logs_
 *.py[cod]
 *$py.class

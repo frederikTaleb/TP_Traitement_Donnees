@@ -14,6 +14,19 @@ import text_preprocessing
 import load_datasets
 import MBTIDataset
 
+class MBTIDataset(Dataset):
+    def __init__(self, encodings, labels):
+        self.encodings = encodings
+        self.labels = labels
+
+    def __getitem__(self, idx):
+        item = {key: self.encodings[key][idx] for key in self.encodings}
+        item['labels'] = torch.tensor([self.labels[idx]], dtype=torch.float32).unsqueeze(1)
+        return item
+
+    def __len__(self):
+        return len(self.labels)
+
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = (torch.sigmoid(torch.tensor(logits)) >= 0.5).int().flatten().tolist()
@@ -97,8 +110,8 @@ df = df.dropna(subset=['body', 'introverted'])
 """
 
 df = df_comments_merged.dropna(subset=['body', 'introverted'])
-df_1 = df_1.sample(n=2000000, replace=False, random_state=42)
-df_0 = df_0.sample(n=2000000, replace=False, random_state=42)
+df_1 = df_1.sample(n=20000, replace=False, random_state=42)
+df_0 = df_0.sample(n=20000, replace=False, random_state=42)
 df = pd.concat([df_1,df_0])
 texts = df['body'].tolist()
 labels = df['introverted'].tolist()

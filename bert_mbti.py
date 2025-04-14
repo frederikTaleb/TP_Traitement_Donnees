@@ -101,13 +101,6 @@ model = BertForSequenceClassification.from_pretrained(model_name, num_labels=num
 
 df_1 = df_comments_merged[df_comments_merged['introverted'] == 1]
 df_0 = df_comments_merged[df_comments_merged['introverted'] == 0]
-# temporarire pour test
-"""
-df_1 = df_1.sample(n=1000, replace=False, random_state=42)
-df_0 = df_0.sample(n=1000, replace=False, random_state=42)
-df = pd.concat([df_1,df_0])
-df = df.dropna(subset=['body', 'introverted'])
-"""
 
 df = df_comments_merged.dropna(subset=['body', 'introverted'])
 df_1 = df_1.sample(n=20000, replace=False, random_state=42)
@@ -126,8 +119,8 @@ training_args = TrainingArguments(
     output_dir='./results_introverted',
     eval_strategy="epoch",
     learning_rate=2e-5,
-    per_device_train_batch_size=32,
-    per_device_eval_batch_size=32,
+    per_device_train_batch_size=48,
+    per_device_eval_batch_size=48,
     num_train_epochs=3,
     weight_decay=0.01,
     logging_dir='./logs_introverted',

@@ -11,10 +11,11 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 import text_preprocessing
 import load_datasets
 
-enneagram_columns = ['enneagram_type', 'enneagram_wing']
+mbti_columns = ['introverted', 'intuitive', 'thinking','perceiving']
 
 df_profiles = load_datasets.load_profiles_dataset()
-df_comments = load_datasets.load_comments_dataset()
+#df_profiles = df_profiles.dropna(subset=mbti_columns)
+df_comments = load_datasets.load_comments_by_authors(df_profiles['author'].unique())
 
 df_comments['created_utc'] = pd.to_datetime(df_comments['created_utc'], unit='s')
 
@@ -103,26 +104,26 @@ activity_metric_cols = [
 
 other_numeric_cols = ['is_female_pred']
 
-all_relevant_cols = enneagram_columns + activity_metric_cols + other_numeric_cols
+all_relevant_cols = mbti_columns + activity_metric_cols + other_numeric_cols
 df_corr = df_merged[all_relevant_cols].copy()
 correlation_matrix = df_corr.corr() 
 
-mbti_vs_metrics_corr = correlation_matrix.loc[enneagram_columns, [col for col in activity_metric_cols + other_numeric_cols if col in df_corr.columns]]
+mbti_vs_metrics_corr = correlation_matrix.loc[mbti_columns, [col for col in activity_metric_cols + other_numeric_cols if col in df_corr.columns]]
 
 features = [col for col in activity_metric_cols + ['is_female_pred'] if col in df_merged.columns]
-df_merged_train = df_merged.dropna(subset=enneagram_columns)
+df_merged_train = df_merged.dropna(subset=mbti_columns)
 X = df_merged_train[features]
 
 models = {}
-for enneagram_target in enneagram_columns:
-    y = df_merged_train[enneagram_target].astype(int)
+for mbti_target in mbti_columns:
+    y = df_merged_train[mbti_target].astype(int)
     model = rf(X,y)
     model.train()
-    models[enneagram_target] = model
+    models[mbti_target] = model
 
-for enneagram_target in enneagram_columns:
-    y_pred = models[enneagram_target].predict(df_merged[features])
-    new_column_name = f"{enneagram_target}_pred"
+for mbti_target in mbti_columns:
+    y_pred = models[mbti_target].predict(df_merged[features])
+    new_column_name = f"{mbti_target}_pred"
     df_merged[new_column_name] = y_pred
 
-df_merged[['author','enneagram_type_pred', 'enneagram_wing_pred']]
+df_merged[['author','introverted_pred', 'intuitive_pred', 'thinking_pred', 'perceiving_pred']].to_csv('datasets/profiles_mbti_pred')
